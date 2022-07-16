@@ -55,6 +55,30 @@ def pause(paused_1):
         pygame.mixer.music.pause()
         paused=True
 
+def next_song():
+    next_one=play_box.curselection()
+    next_one=next_one[0]+1
+    song=play_box.get(next_one)
+    song=f'{song}'
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(loops=0)
+    play_box.selection_clear(0,END)
+    play_box.activate(next_one)
+    play_box.selection_set(next_one,last=None)
+
+def previous_song():
+    next_one=play_box.curselection()
+    next_one=next_one[0]-1
+    song=play_box.get(next_one)
+    song=f'{song}'
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(loops=0)
+    play_box.selection_clear(0,END)
+    play_box.activate(next_one)
+    play_box.selection_set(next_one,last=None)
+
+
+
 #play_list box
 play_box=Listbox(root,bg="black",fg="green",width=60,selectbackground="blue")
 play_box.pack(pady=20)
@@ -74,17 +98,17 @@ control_frame=Frame(root)
 control_frame.pack(pady=20)
 
 #buttons
-back=Button(control_frame,image=back_img,borderwidth=0)
-forward=Button(control_frame,image=forward_img,borderwidth=0)
-play=Button(control_frame,image=play_img,borderwidth=0,command=play)
+back_btn=Button(control_frame,image=back_img,borderwidth=0,command=previous_song)
+forward_btn=Button(control_frame,image=forward_img,borderwidth=0,command=next_song)
+play_btn=Button(control_frame,image=play_img,borderwidth=0,command=play)
 pause_btn=Button(control_frame,image=pause_img,borderwidth=0,command=lambda:pause(paused))
-stop=Button(control_frame,image=stop_img,borderwidth=0,command=stop)
+stop_btn=Button(control_frame,image=stop_img,borderwidth=0,command=stop)
 
-back.grid(row=0,column=0,padx=10)
-forward.grid(row=0,column=1,padx=10)
-play.grid(row=0,column=2,padx=10)
+back_btn.grid(row=0,column=0,padx=10)
+forward_btn.grid(row=0,column=1,padx=10)
+play_btn.grid(row=0,column=2,padx=10)
 pause_btn.grid(row=0,column=3,padx=10)
-stop.grid(row=0,column=4,padx=10)
+stop_btn.grid(row=0,column=4,padx=10)
 
 #menu creation
 m_menu=Menu(root)
