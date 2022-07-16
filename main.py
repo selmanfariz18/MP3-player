@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import filedialog
+from paramiko import PasswordRequiredException
 import pygame
 root=Tk()
 
@@ -18,7 +19,7 @@ def add_many_songs():
     songs=filedialog.askopenfilenames(initialdir="audio/",filetypes=(("mp3 Files","*.mp3"),))
     for song in songs:
         #strip out directory
-        song=song.replace("/home/admin2/Desktop/MP3-player/audio/","")
+        #song=song.replace("/home/admin2/Desktop/MP3-player/audio/","")
         my_label.config(text=song)
         play_box.insert(END, song)
 
@@ -30,9 +31,29 @@ def delete_songs():
 
 def play():
     song=play_box.get(ACTIVE)
-    song=f'/home/admin2/Desktop/MP3-player/audio/{song}'
+    #song=f'/home/admin2/Desktop/MP3-player/audio/{song}'
     pygame.mixer.music.load(song)
     pygame.mixer.music.play(loops=0)
+
+
+
+def stop():
+    pygame.mixer.music.stop()
+    play_box.selection_clear(ACTIVE)
+
+#pause variable
+global paused
+paused=False
+
+def pause(paused_1):
+    global paused
+    paused=paused_1
+    if paused:
+        pygame.mixer.music.unpause()
+        paused=False
+    else:
+        pygame.mixer.music.pause()
+        paused=True
 
 #play_list box
 play_box=Listbox(root,bg="black",fg="green",width=60,selectbackground="blue")
@@ -56,13 +77,13 @@ control_frame.pack(pady=20)
 back=Button(control_frame,image=back_img,borderwidth=0)
 forward=Button(control_frame,image=forward_img,borderwidth=0)
 play=Button(control_frame,image=play_img,borderwidth=0,command=play)
-pause=Button(control_frame,image=pause_img,borderwidth=0)
-stop=Button(control_frame,image=stop_img,borderwidth=0)
+pause_btn=Button(control_frame,image=pause_img,borderwidth=0,command=lambda:pause(paused))
+stop=Button(control_frame,image=stop_img,borderwidth=0,command=stop)
 
 back.grid(row=0,column=0,padx=10)
 forward.grid(row=0,column=1,padx=10)
 play.grid(row=0,column=2,padx=10)
-pause.grid(row=0,column=3,padx=10)
+pause_btn.grid(row=0,column=3,padx=10)
 stop.grid(row=0,column=4,padx=10)
 
 #menu creation
