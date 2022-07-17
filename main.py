@@ -12,7 +12,7 @@ root.geometry("600x400")
 pygame.mixer.init()
 
 def play_time():
-    current_time=pygame.mixer.music.get_pos()
+    current_time=pygame.mixer.music.get_pos()/1000
     converted_current_time=time.strftime('%M:%S',time.gmtime(current_time))
     song=play_box.get(ACTIVE)
     song_mut=MP3(song)
@@ -97,6 +97,10 @@ def previous_song():
 def volume(x):
     pygame.mixer.music.set_volume(volume_slider.get())
 
+def seek(x):
+    pass
+
+
 #main frame
 main_frame=Frame(root)
 main_frame.pack(pady=20)
@@ -109,8 +113,12 @@ play_box.grid(row=0,column=0)
 volume_frame=LabelFrame(main_frame,text="")
 volume_frame.grid(row=0,column=1,padx=30)
 #volume slider
-volume_slider=ttk.Scale(volume_frame,from_=0,to=1,orient=VERTICAL,length=125,value=1,command=volume)
+volume_slider=ttk.Scale(volume_frame,from_=1,to=0,orient=VERTICAL,length=125,value=1,command=volume)
 volume_slider.pack(pady=10)
+
+#song slider
+song_slider=ttk.Scale(main_frame,from_=0,to=100,orient=HORIZONTAL,length=575,value=0,command=seek)
+song_slider.grid(row=2,column=0,pady=20,padx=10)
 
 #button images
 back_img=PhotoImage(file="icons/output-fast-backward.png")
