@@ -8,10 +8,13 @@ import tkinter.ttk as ttk
 root=Tk()
 
 root.title("MP3 player")
-root.geometry("600x400")
+root.geometry("650x400")
 pygame.mixer.init()
 
 def play_time():
+    if stopped:
+        return
+
     current_time=pygame.mixer.music.get_pos()/1000
     converted_current_time=time.strftime('%M:%S',time.gmtime(current_time))
     song=play_box.get(ACTIVE)
@@ -19,19 +22,26 @@ def play_time():
     global song_length
     song_length=song_mut.info.length
     converted_song_length=time.strftime('%M:%S',time.gmtime(song_length))
+    
+    if int(song_slider.get())==int(song_length):
+        stop()
+
+    elif paused:
+        pass
+    else:
+        next_time=int(song_slider.get())+1
+        song_slider.config(to=song_length,value=next_time)
+        converted_current_time=time.strftime('%M:%S',time.gmtime(int(song_slider.get())))
+        status_bar.config(text=f'Time Elapsed: {converted_current_time} of {converted_song_length}')
+
     if current_time>=1:
         status_bar.config(text=f'Time Elapsed: {converted_current_time} of {converted_song_length}')
     status_bar.after(1000,play_time)
 
 
-def add_song():
-    song=filedialog.askopenfilename(initialdir="audio/",filetypes=(("mp3 Files","*.mp3"),))
-    #strip out directory
-    #song=song.replace("/home/admin2/Desktop/MP3-player/audio/","")
-    my_label.config(text=song)
-    play_box.insert(END, song)
 
-def add_many_songs():
+
+def songs():
     songs=filedialog.askopenfilenames(initialdir="audio/",filetypes=(("mp3 Files","*.mp3"),))
     for song in songs:
         #strip out directory
@@ -46,6 +56,8 @@ def delete_songs():
     play_box.delete(0,END)
 
 def play():
+    global stopped
+    stopped=False
     song=play_box.get(ACTIVE)
     #song=f'/home/admin2/Desktop/MP3-player/audio/{song}'
     pygame.mixer.music.load(song)
@@ -53,10 +65,15 @@ def play():
     play_time()
 
 
+global stopped
+stopped=False
 def stop():
     pygame.mixer.music.stop()
     play_box.selection_clear(ACTIVE)
     status_bar.config(text=f'')
+    song_slider.config(value=0)
+    global stopped
+    stopped=True
 
 #pause variable
 global paused
@@ -73,6 +90,8 @@ def pause(paused_1):
         paused=True
 
 def next_song():
+    status_bar.config(text='')
+    song_slider.config(value=0)
     next_one=play_box.curselection()
     next_one=next_one[0]+1
     song=play_box.get(next_one)
@@ -84,6 +103,8 @@ def next_song():
     play_box.selection_set(next_one,last=None)
 
 def previous_song():
+    status_bar.config(text='')
+    song_slider.config(value=0)
     next_one=play_box.curselection()
     next_one=next_one[0]-1
     song=play_box.get(next_one)
@@ -98,7 +119,10 @@ def volume(x):
     pygame.mixer.music.set_volume(volume_slider.get())
 
 def seek(x):
-    pass
+    song=play_box.get(ACTIVE)
+    #song=f'/home/admin2/Desktop/MP3-player/audio/{song}'
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(loops=0,start=song_slider.get())
 
 
 #main frame
@@ -110,14 +134,14 @@ play_box=Listbox(main_frame,bg="black",fg="green",width=60,selectbackground="blu
 play_box.grid(row=0,column=0)
 
 #volume slider frame
-volume_frame=LabelFrame(main_frame,text="")
-volume_frame.grid(row=0,column=1,padx=30)
+volume_frame=LabelFrame(main_frame,text="volume")
+volume_frame.grid(row=0,column=1)
 #volume slider
 volume_slider=ttk.Scale(volume_frame,from_=1,to=0,orient=VERTICAL,length=125,value=1,command=volume)
 volume_slider.pack(pady=10)
 
 #song slider
-song_slider=ttk.Scale(main_frame,from_=0,to=100,orient=HORIZONTAL,length=575,value=0,command=seek)
+song_slider=ttk.Scale(main_frame,from_=0,to=100,orient=HORIZONTAL,length=550,value=0,command=seek)
 song_slider.grid(row=2,column=0,pady=20,padx=10)
 
 #button images
@@ -150,10 +174,9 @@ root.config(menu=m_menu)
 
 #add song menu dropdown
 add_song_menu=Menu(m_menu,tearoff=0)
-m_menu.add_cascade(label="Add songs",menu=add_song_menu)
-add_song_menu.add_command(label="add one song",command=add_song)
+m_menu.add_command(label="Add songs",command=songs)
 #adding many songs
-add_song_menu.add_command(label="add more songs",command=add_many_songs)
+#m_menu.add_command(label="add more songs",command=songs)
 
 #remove songs
 remove_song_menu=Menu(m_menu,tearoff=0)
