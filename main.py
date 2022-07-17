@@ -1,17 +1,33 @@
 from tkinter import *
 from tkinter import filedialog
-from paramiko import PasswordRequiredException
+from tkinter import ttk
 import pygame
+import time
+from mutagen.mp3 import MP3
+import tkinter.ttk as ttk
 root=Tk()
 
 root.title("MP3 player")
-root.geometry("500x400")
+root.geometry("600x400")
 pygame.mixer.init()
+
+def play_time():
+    current_time=pygame.mixer.music.get_pos()
+    converted_current_time=time.strftime('%M:%S',time.gmtime(current_time))
+    song=play_box.get(ACTIVE)
+    song_mut=MP3(song)
+    global song_length
+    song_length=song_mut.info.length
+    converted_song_length=time.strftime('%M:%S',time.gmtime(song_length))
+    if current_time>=1:
+        status_bar.config(text=f'Time Elapsed: {converted_current_time} of {converted_song_length}')
+    status_bar.after(1000,play_time)
+
 
 def add_song():
     song=filedialog.askopenfilename(initialdir="audio/",filetypes=(("mp3 Files","*.mp3"),))
     #strip out directory
-    song=song.replace("/home/admin2/Desktop/MP3-player/audio/","")
+    #song=song.replace("/home/admin2/Desktop/MP3-player/audio/","")
     my_label.config(text=song)
     play_box.insert(END, song)
 
@@ -34,12 +50,13 @@ def play():
     #song=f'/home/admin2/Desktop/MP3-player/audio/{song}'
     pygame.mixer.music.load(song)
     pygame.mixer.music.play(loops=0)
-
+    play_time()
 
 
 def stop():
     pygame.mixer.music.stop()
     play_box.selection_clear(ACTIVE)
+    status_bar.config(text=f'')
 
 #pause variable
 global paused
@@ -77,14 +94,23 @@ def previous_song():
     play_box.activate(next_one)
     play_box.selection_set(next_one,last=None)
 
+def volume(x):
+    pygame.mixer.music.set_volume(volume_slider.get())
 
+#main frame
+main_frame=Frame(root)
+main_frame.pack(pady=20)
 
 #play_list box
-play_box=Listbox(root,bg="black",fg="green",width=60,selectbackground="blue")
-play_box.pack(pady=20)
+play_box=Listbox(main_frame,bg="black",fg="green",width=60,selectbackground="blue")
+play_box.grid(row=0,column=0)
 
-
-
+#volume slider frame
+volume_frame=LabelFrame(main_frame,text="")
+volume_frame.grid(row=0,column=1,padx=30)
+#volume slider
+volume_slider=ttk.Scale(volume_frame,from_=0,to=1,orient=VERTICAL,length=125,value=1,command=volume)
+volume_slider.pack(pady=10)
 
 #button images
 back_img=PhotoImage(file="icons/output-fast-backward.png")
@@ -94,8 +120,8 @@ pause_img=PhotoImage(file="icons/output-pause.png")
 stop_img=PhotoImage(file="icons/output-stop.png")
 
 #buttons frame
-control_frame=Frame(root)
-control_frame.pack(pady=20)
+control_frame=Frame(main_frame)
+control_frame.grid(row=1,column=0,pady=20)
 
 #buttons
 back_btn=Button(control_frame,image=back_img,borderwidth=0,command=previous_song)
@@ -126,6 +152,10 @@ remove_song_menu=Menu(m_menu,tearoff=0)
 m_menu.add_cascade(label="Remove songs",menu=remove_song_menu)
 remove_song_menu.add_command(label="Delete a song",command=delete_song)
 remove_song_menu.add_command(label="Delete all songs",command=delete_songs)
+
+#status bar
+status_bar=Label(root,text='nothing',bd=1,relief=GROOVE,anchor=E)
+status_bar.pack(fill=X,side=BOTTOM,ipady=2)
 
 
 #temporary label
